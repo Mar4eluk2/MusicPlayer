@@ -78,6 +78,18 @@ class Track:
         """Получить длительность трека в формате MM:SS"""
         return str(datetime.timedelta(seconds=self.__duration)).split('.')[0][-5:]
 
+    def get_album_cover(self):
+        """Получить обложку альбома (bytes)"""
+        try:
+            if os.path.exists(self.__path) and self.__path.lower().endswith('.mp3'):
+                id3 = ID3(self.__path)
+                for tag in id3.keys():
+                    if tag.startswith('APIC'):  # APIC - тег, содержащий изображение
+                        return id3[tag].data
+        except Exception as e:
+            print(f"Ошибка при получении обложки: {e}")
+        return None
+
     def __str__(self):
         """Строковое представление трека"""
         return f"{self.__artist} - {self.__title}"

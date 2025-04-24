@@ -2,6 +2,8 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                            QSlider, QLabel, QStyle)
 from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QPixmap
+from io import BytesIO
 import datetime
 
 class PlayerControls(QWidget):
@@ -26,6 +28,13 @@ class PlayerControls(QWidget):
     def __setup_ui(self):
         """Настройка пользовательского интерфейса"""
         main_layout = QVBoxLayout(self)
+
+        # Обложка альбома
+        self.__album_cover = QLabel()
+        self.__album_cover.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.__album_cover.setMinimumSize(200, 200)
+        self.__album_cover.setMaximumSize(300, 300)
+        main_layout.addWidget(self.__album_cover)
 
         # Информационная панель
         self.__info_label = QLabel("Нет воспроизведения")
@@ -110,8 +119,7 @@ class PlayerControls(QWidget):
         self.__update_timer.stop()
 
         # Перематываем трек
-        self.__player.get_position()  # Обновляем текущую позицию до перемотки
-        self.__player.set_position(position)
+        self.__player.set_position(position)  # Исправленная строка - напрямую устанавливаем позицию
 
         # Возобновляем обновление через небольшую задержку
         # чтобы не перезаписать позицию слайдера сразу после установки
@@ -124,6 +132,20 @@ class PlayerControls(QWidget):
         if current_track:
             # Обновляем информацию о треке
             self.__info_label.setText(f"{current_track.artist} - {current_track.title}")
+
+            # Загружаем обложку альбома
+            cover_data = current_track.get_album_cover()
+            if cover_data:
+                pixmap = QPixmap()
+                pixmap.loadFromData(cover_data)
+                self.__album_cover.setPixmap(pixmap.scaled(
+                    self.__album_cover.size(),
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                ))
+            else:
+                # Если обложка не найдена, очищаем
+                self.__album_cover.clear()
 
             # Обновляем длительность
             duration = current_track.duration
@@ -160,3 +182,4 @@ class PlayerControls(QWidget):
             self.__position_slider.setValue(0)
             self.__position_slider.setRange(0, 0)
             self.__play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
+            self.__album_cover.clear()
