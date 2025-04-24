@@ -101,8 +101,13 @@ class PlayerControls(QWidget):
         # При перемещении ползунка положения трека
         self.__position_slider.sliderMoved.connect(self.__seek_position)
 
-        # Обновляем при изменении состояния плеера
-        # В реальной реализации здесь должны быть подключения к сигналам плеера
+        # Добавляем обработку одиночного клика - выполнится при отпускании клика
+        self.__position_slider.sliderReleased.connect(self.__on_slider_released)
+
+    def __on_slider_released(self):
+        """Обработка отпускания ползунка после клика или перетаскивания"""
+        position = self.__position_slider.value()
+        self.__seek_position(position)
 
     def __toggle_play(self):
         """Переключение между воспроизведением и паузой"""
